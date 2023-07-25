@@ -11,7 +11,9 @@
     <br />
     <br />
     <br />
-    <a href="https://colab.research.google.com/drive/1NqoCpFbrtRqL4j9ECK7vlG1lWnaLiNau?usp=sharing">[![Потыкать в Google Colab](https://colab.research.google.com/assets/colab-badge.svg)]</a>
+    <a href="https://colab.research.google.com/drive/1NqoCpFbrtRqL4j9ECK7vlG1lWnaLiNau?usp=sharing">
+  <img src="https://colab.research.google.com/assets/colab-badge.svg" alt="Потыкать в Google Colab">
+</a>
     ·
     <a href="https://github.com/elmanoveu/QRtist/issues">Потыкать бота <span><sub>beta</sub></span></a>
     ·
