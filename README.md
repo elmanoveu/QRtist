@@ -5,7 +5,7 @@
 <r />
 
   <h3 align="center">QRtist</h3>
-<img src="https://github.com/elmanoveu/QRtist/blob/391dee12fd4a5f593b0b77ef4817eeb1f033e874/docs/examples/github111.png" alt="Пример изображения">
+<img src="docs/examples/github111.png" alt="Пример изображения">
     
 
   <p align="center">
