@@ -8,9 +8,10 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import InlineKeyboardButton,InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 import yaml
 import qrcode
+import torch
 from aiogram.utils import markdown as md
 from keyboards import start_kb,success_finish_kb
-
+from sd_text2image import pipe
 
 
 logging.basicConfig(level=logging.INFO)
@@ -80,6 +81,19 @@ async def generate_qr_code(callback_query: types.CallbackQuery):
     await bot.send_message(callback_query.from_user.id, "Введите URL, для которого нужно сгенерировать QR-код:")
     await QRCodeGeneration.waiting_for_url.set()
 
+async def generate_command(source_image, prompt_value, negative_prompt_value,
+                        controlnet_conditioning_scale_value=1.8):
+
+        generator = torch.manual_seed(123121231)
+        # Ваш код для работы с pipe и получения результата
+        image = pipe(prompt=prompt_value, negative_prompt=negative_prompt_value,
+                     image=source_image, width=768, height=768, guidance_scale=25,
+                     controlnet_conditioning_scale=controlnet_conditioning_scale_value,
+                     generator=generator, num_inference_steps=50)
+
+        return image
+
+
 @dp.message_handler(state=QRCodeGeneration.waiting_for_url)
 async def process_url(message: types.Message, state: FSMContext):
     try:
@@ -96,11 +110,17 @@ async def process_url(message: types.Message, state: FSMContext):
         qr.make(fit=True)
         img = qr.make_image(fill_color='black', back_color='white')
         # Create a temporary BytesIO buffer to send the image without saving it to disk
-        image_buffer = BytesIO()
-        img.save(image_buffer)
-        image_buffer.seek(0) # Move the pointer to the beginning of the buffer
-        await bot.send_photo(message.from_user.id, photo=image_buffer)
-        # Send a confirmation message and offer two options with a custom keyboard
+        make_diffusion=True
+        if not make_diffusion:
+            image_buffer = BytesIO()
+            img.save(image_buffer)
+            image_buffer.seek(0) # Move the pointer to the beginning of the buffer
+            await bot.send_photo(message.from_user.id, photo=image_buffer)
+            # Send a confirmation message and offer two options with a custom keyboard
+        else:
+            prompt_value = "(masterpiece, top quality, best quality, extreme detailed, highest detailed, official art, beautiful and aesthetic:1.2), colorful, cowboy shot, beautiful face, solo",
+            negative_prompt_value = " (worst quality:2), (low quality:2), (normal quality:2),",
+            generate_command(img.get_image(),prompt_value,negative_prompt_value)
 
         await message.answer("QR-код сгенерирован успешно!\nВыберите действие:", reply_markup=success_finish_kb())
         # Finish the state
