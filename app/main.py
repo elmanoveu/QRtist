@@ -8,6 +8,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import InlineKeyboardButton,InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 import yaml
 import qrcode
+from aiogram.utils import markdown as md
 from keyboards import start_kb,success_finish_kb
 
 
@@ -27,10 +28,51 @@ class QRCodeGeneration(StatesGroup):
 
 @dp.message_handler(commands=['start'])
 async def send_welcome(message: types.Message):
+    welcome_text = """
+        <b>Available commands:</b>
+        /start - Start the QR Code generation process.
+        /help - Show help message.
+        """
+    await message.answer(welcome_text, parse_mode=types.ParseMode.HTML)
     keyboard = InlineKeyboardMarkup()
     qr_button = InlineKeyboardButton("Сгенерировать QR-код", callback_data="generate_qr")
     keyboard.add(qr_button)
     await message.answer("Выберите действие:", reply_markup=start_kb())
+
+@dp.message_handler(commands=['help'])
+async def show_help(message: types.Message):
+    message_text = "Появление QR-кода - это один из наиболее удобных и многообещающих инноваций в мире технологий. " \
+                   "Эти квадратные матричные коды представляют собой уникальную комбинацию черных и белых " \
+                   "квадратов, способных хранить разнообразную информацию. Вот несколько ключевых возможностей " \
+                   "QR-кода, которые делают его таким удобным и популярным:\n\n"
+
+    formatted_message = md.text(message_text,
+        md.bold("Быстрый доступ к информации:"), "QR-коды позволяют быстро получать доступ к различным видам "
+                                                 "информации. Пользователи могут легко сканировать коды с помощью "
+                                                 "камеры своего смартфона или планшета, что позволяет получать текстовую "
+                                                 "информацию, URL-ссылки, контактные данные, географические координаты и "
+                                                 "многое другое. Это делает процесс передачи и получения данных более "
+                                                 "удобным и эффективным.\n\n",
+        md.bold("Продвижение бренда и продукции:"), "QR-коды стали мощным инструментом для маркетинговых кампаний. "
+                                                    "Они могут быть использованы для привлечения внимания к брендам и "
+                                                    "продукции, а также для предоставления потенциальным клиентам скидок, "
+                                                    "акций и специальных предложений. Размещение QR-кода на упаковке "
+                                                    "товара, в рекламных материалах или на витринах магазинов помогает "
+                                                    "привлечь новых клиентов и укрепить лояльность существующих.\n\n",
+        md.bold("Упрощение оплаты и авторизации:"), "QR-коды активно применяются в сфере финансовых технологий. Они "
+                                                    "позволяют клиентам совершать быстрые и безопасные платежи через "
+                                                    "мобильные приложения или мобильные кошельки. Кроме того, QR-коды могут "
+                                                    "быть использованы для авторизации пользователей, аутентификации и "
+                                                    "получения доступа к различным онлайн-сервисам. Благодаря этим "
+                                                    "возможностям, QR-коды играют ключевую роль в развитии цифровой "
+                                                    "экономики и улучшении пользовательского опыта.\n\n",
+        "В целом, QR-коды представляют собой универсальный инструмент с широким спектром применения: от личного "
+        "использования для быстрого доступа к информации до коммерческих задач, таких как маркетинг и оплата. Их "
+        "удобство, эффективность и простота использования делают QR-коды незаменимым элементом в современном цифровом "
+        "мире."
+    )
+
+    await message.answer(text=formatted_message, parse_mode=types.ParseMode.MARKDOWN)
 
 @dp.callback_query_handler(text="generate_qr")
 async def generate_qr_code(callback_query: types.CallbackQuery):
@@ -47,7 +89,7 @@ async def process_url(message: types.Message, state: FSMContext):
         qr = qrcode.QRCode(
             version=1,
             box_size=20,
-            border=1,
+            border=4,
             error_correction=qrcode.constants.ERROR_CORRECT_L
         )
         qr.add_data(data)
