@@ -2,9 +2,9 @@ aiogram
 pyaml
 requests
 qrcode
-diffusers==0.7.2
-transformers==4.24.0
-scipy
-ftfy==6.1.1
-python-dotenv>=0.20.0
+diffusers
+transformers
+accelerate
+torch
+xformers
 huggingface_hub==0.10.1
