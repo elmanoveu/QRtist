@@ -1,5 +1,5 @@
 aiogram
-pyaml
+python-dotenv
 requests
 qrcode
 diffusers

@@ -25,6 +25,8 @@
 
 
 
+## News
+- ✍️ [08/04] Возможно добавление positive prompt
 <!-- ABOUT THE PROJECT -->
 
 ## О проекте(About the project)
