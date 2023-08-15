@@ -36,3 +36,4 @@ async def show_help(message: types.Message):
     )
 
     return formatted_message
+

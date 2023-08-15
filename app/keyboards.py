@@ -7,19 +7,21 @@ from aiogram.types.message import ContentType
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.types import InlineKeyboardButton,InlineKeyboardMarkup, ReplyKeyboardMarkup, KeyboardButton
 
-def start_kb():
-    keyboard = InlineKeyboardMarkup()
-    qr_button = InlineKeyboardButton("Сгенерировать QR-код", callback_data="generate_qr")
-    keyboard.add(qr_button)
+
+def get_confirmation_keyboard():
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+    yes_button = KeyboardButton(text="Yes, all correct")
+    try_again_button = KeyboardButton(text="Try entering again")
+    return_keyboard = KeyboardButton(text="Return to main menu")
+    keyboard.add(yes_button, try_again_button, return_keyboard)
     return keyboard
-
-def success_finish_kb():
-    keyboard = InlineKeyboardMarkup()
-    keyboard.add(InlineKeyboardButton("Возврат в основное меню",callback_data="back2mainmenu"))
-    keyboard.add(InlineKeyboardButton("Сгенерировать ещё один",callback_data="generate_qr"))
+def choose_generation_options_keyboard():
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+    use_references_button = KeyboardButton(text="Use ready references")
+    custom_prompt_button = KeyboardButton(text="Try with my prompt")
+    return_to_main_menu_button = KeyboardButton(text="Return to main menu")
+    keyboard.add(use_references_button, custom_prompt_button, return_to_main_menu_button)
     return keyboard
-
-
 
 
 
