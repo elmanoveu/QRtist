@@ -19,9 +19,9 @@ TOKEN = os.getenv("TOKEN")
 
 text2generate=None
 logging.basicConfig(level=logging.INFO)
-
+storage = MemoryStorage()
 bot = Bot(token = TOKEN, parse_mode = types.ParseMode.HTML)
-dp = Dispatcher(bot)
+dp = Dispatcher(bot, storage=storage)
 
 
 
@@ -65,13 +65,13 @@ async def start_command(message: types.Message):
             /help - Show help message.
             """
     await message.answer(welcome_text, parse_mode=types.ParseMode.HTML)
-    generate_qr_button = KeyboardButton(text="Сгенерировать Qr-код")
+    generate_qr_button = KeyboardButton(text="Generate")
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True).add(generate_qr_button)
-    await message.answer("Привет! Нажми на кнопку, чтобы сгенерировать Qr-код.", reply_markup=keyboard)
-@dp.message_handler(lambda message: message.text == "Сгенерировать Qr-код")
+    await message.answer("Hi! Click the button to generate a QR code.", reply_markup=keyboard)
+@dp.message_handler(lambda message: message.text == "Generate")
 async def generate_qr_button_handler(message: types.Message):
     global text2generate
-    await message.answer("Введите текст для генерации QR-кода.")
+    await message.answer("Enter text or URL to generate a QR code.")
     # Устанавливаем состояние ожидания ввода текста
     text2generate = message.text
     await QRCodeGenerationStates.waiting_for_text.set()
@@ -80,7 +80,7 @@ async def process_generated_text(message: types.Message, state: FSMContext):
     user_input_text = message.text
     await state.finish()  # Завершаем состояние ожидания ввода текста
     confirmation_keyboard = get_confirmation_keyboard()
-    await message.answer(f"Вы ввели: {user_input_text}\nПодтверждаете правильность?",
+    await message.answer(f"You entered: {user_input_text}\nWill you confirm that it is correct?",
                          reply_markup=confirmation_keyboard)
     await state.update_data(user_input_text=user_input_text)
 
@@ -93,7 +93,13 @@ async def try_entering_again_handler(message: types.Message):
 async def confirm_text_handler(message: types.Message):
     await message.answer("Great! Now you have the following options:")
     choice_keyboard = choose_generation_options_keyboard()
-    await message.answer("What would you like to do?", reply_markup=choice_keyboard)
+    choose_text = """
+    Choose the option:
+    <b>Use ready references</b> - Generate image based on existing materials.
+    <b>Try with my prompt</b> - Generate image from your own textual prompt.
+    <b>Return to main menu</b> - Go back to the main menu for other options.
+"""
+    await message.answer(choose_text, reply_markup=choice_keyboard)
 
 @dp.message_handler(lambda message: message.text == "Try with my prompt")
 async def try_with_prompt_handler(message: types.Message):
@@ -112,15 +118,16 @@ async def process_custom_prompt(message: types.Message, state: FSMContext):
     await state.finish()  # Завершаем состояние ожидания ввода пользовательского текста
     # Сохраняем введенный пользовательский текст в переменную positive_prompt
     await state.update_data(positive_prompt=positive_prompt)
-    await message.reply(f"Вы ввели свой промпт: {positive_prompt}")
+    await message.reply(f"You entered your prompt: {positive_prompt}")
     logging.info("start diffusion (∩ ͡° ͜ʖ ͡°)⊃━☆ﾟ. *")
+    await message.answer("start generate (∩ ͡° ͜ʖ ͡°)⊃━☆ﾟ. *")
     negative_prompt_value = 'bad,ugly,nsfw, worst quality'
     qr_code_img = generate_qr_code(text2generate)  # Генерируем QR-код с user_url
     output_img = generate_command(qr_code_img.get_image(), positive_prompt, negative_prompt_value)
     await bot.send_photo(message.from_user.id, photo=output_img)
     positive_prompt = None  # Сбрасываем positive_prompt после сохранения
     text2generate = None
-    await message.answer("QR-код сгенерирован успешно!\n Попробуете еще раз?" , reply_markup=choose_generation_options_keyboard())
+    await message.answer("QR code generated successfully! Would you like to try again?" , reply_markup=choose_generation_options_keyboard())
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
